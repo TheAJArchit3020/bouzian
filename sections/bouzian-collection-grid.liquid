@@ -1,0 +1,299 @@
+{{ 'bouzian-editorial.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign selected_collection = section.settings.collection
+  assign products_to_show = section.settings.products_to_show
+-%}
+
+{%- style -%}
+  #BouzianCollection-{{ section.id }} {
+    --bouzian-background: {{ section.settings.background_color }};
+    --bouzian-text-color: {{ section.settings.text_color }};
+    --bouzian-border-color: {{ section.settings.border_color }};
+    --bouzian-card-background: {{ section.settings.card_background_color }};
+    --bouzian-card-media-background: {{ section.settings.card_media_background_color }};
+    --bouzian-columns-desktop: {{ section.settings.columns_desktop }};
+    --bouzian-columns-mobile: {{ section.settings.columns_mobile }};
+    --bouzian-title-size: {{ section.settings.title_size }}px;
+    --bouzian-card-ratio: {{ section.settings.image_ratio }};
+    --bouzian-card-image-fit: {{ section.settings.image_fit }};
+    --bouzian-padding-top: {{ section.settings.padding_top }}px;
+    --bouzian-padding-bottom: {{ section.settings.padding_bottom }}px;
+    {% unless section.settings.uppercase %}
+      --bouzian-text-transform: none;
+    {% endunless %}
+  }
+{%- endstyle -%}
+
+<section id="BouzianCollection-{{ section.id }}" class="bouzian-collection">
+  <div class="bouzian-section-header">
+    <div>
+      {%- if section.settings.eyebrow != blank -%}
+        <p class="bouzian-eyebrow">{{ section.settings.eyebrow | escape }}</p>
+      {%- endif -%}
+      <h2 class="bouzian-section-title">
+        {%- if section.settings.heading != blank -%}
+          {{ section.settings.heading }}
+        {%- elsif selected_collection != blank -%}
+          {{ selected_collection.title }}
+        {%- else -%}
+          Gevogelte
+        {%- endif -%}
+      </h2>
+    </div>
+    {%- if section.settings.button_label != blank -%}
+      <a class="bouzian-button bouzian-button--secondary" href="{{ section.settings.button_link | default: selected_collection.url | default: routes.all_products_collection_url }}">
+        {{ section.settings.button_label | escape }}
+      </a>
+    {%- endif -%}
+  </div>
+
+  <div class="bouzian-product-grid">
+    {%- if selected_collection != blank and selected_collection.products.size > 0 -%}
+      {%- for product in selected_collection.products limit: products_to_show -%}
+        <a class="bouzian-product-card" href="{{ product.url }}">
+          <div class="bouzian-product-card__image">
+            {%- if product.featured_media != blank -%}
+              {{
+                product.featured_media
+                | image_url: width: 900
+                | image_tag:
+                  widths: '300, 450, 600, 750, 900',
+                  sizes: '(min-width: 990px) 25vw, 50vw',
+                  loading: 'lazy',
+                  alt: product.featured_media.alt
+              }}
+            {%- else -%}
+              {{ 'product-apparel-2' | placeholder_svg_tag: 'placeholder-svg' }}
+            {%- endif -%}
+          </div>
+          <div class="bouzian-product-card__content">
+            {%- if section.settings.product_meta != blank -%}
+              <p class="bouzian-product-card__meta">{{ section.settings.product_meta | escape }}</p>
+            {%- endif -%}
+            <h3 class="bouzian-product-card__title">{{ product.title }}</h3>
+            <div class="bouzian-product-card__price">
+              {%- render 'price', product: product, price_class: '', show_compare_at_price: true -%}
+            </div>
+            {%- if section.settings.delivery_text != blank -%}
+              <p class="bouzian-product-card__delivery">{{ section.settings.delivery_text | newline_to_br }}</p>
+            {%- endif -%}
+          </div>
+        </a>
+      {%- endfor -%}
+    {%- else -%}
+      {%- for i in (1..4) -%}
+        <div class="bouzian-product-card">
+          <div class="bouzian-product-card__image">
+            {{ 'product-apparel-2' | placeholder_svg_tag: 'placeholder-svg' }}
+          </div>
+          <div class="bouzian-product-card__content">
+            <p class="bouzian-product-card__meta">{{ section.settings.product_meta | default: 'Verse kip' | escape }}</p>
+            <h3 class="bouzian-product-card__title">Kipfilet kippenborst</h3>
+            <div class="bouzian-product-card__price">9,99</div>
+            <p class="bouzian-product-card__delivery">{{ section.settings.delivery_text | newline_to_br }}</p>
+          </div>
+        </div>
+      {%- endfor -%}
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Bouzian collection grid",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "collection",
+      "id": "collection",
+      "label": "Collection"
+    },
+    {
+      "type": "range",
+      "id": "products_to_show",
+      "label": "Products to show",
+      "min": 2,
+      "max": 12,
+      "step": 1,
+      "default": 4
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow",
+      "default": "Vlees"
+    },
+    {
+      "type": "inline_richtext",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Gevogelte"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Button label",
+      "default": "Alles bekijken"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Button link"
+    },
+    {
+      "type": "text",
+      "id": "product_meta",
+      "label": "Product meta text",
+      "default": "Verse kip"
+    },
+    {
+      "type": "textarea",
+      "id": "delivery_text",
+      "label": "Delivery text",
+      "default": "Voor 10u besteld, vanavond in huis\nNa 10u besteld, morgen in huis"
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "range",
+      "id": "columns_desktop",
+      "label": "Desktop columns",
+      "min": 2,
+      "max": 5,
+      "step": 1,
+      "default": 4
+    },
+    {
+      "type": "select",
+      "id": "columns_mobile",
+      "label": "Mobile columns",
+      "options": [
+        {
+          "value": "1",
+          "label": "1"
+        },
+        {
+          "value": "2",
+          "label": "2"
+        }
+      ],
+      "default": "2"
+    },
+    {
+      "type": "select",
+      "id": "image_ratio",
+      "label": "Image ratio",
+      "options": [
+        {
+          "value": "1 / 0.78",
+          "label": "Landscape"
+        },
+        {
+          "value": "1 / 1",
+          "label": "Square"
+        },
+        {
+          "value": "1 / 1.25",
+          "label": "Portrait"
+        }
+      ],
+      "default": "1 / 0.78"
+    },
+    {
+      "type": "select",
+      "id": "image_fit",
+      "label": "Image fit",
+      "options": [
+        {
+          "value": "cover",
+          "label": "Cover"
+        },
+        {
+          "value": "contain",
+          "label": "Contain"
+        }
+      ],
+      "default": "cover"
+    },
+    {
+      "type": "header",
+      "content": "Style"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background",
+      "default": "#F8F6F1"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text",
+      "default": "#070707"
+    },
+    {
+      "type": "color",
+      "id": "border_color",
+      "label": "Borders",
+      "default": "#070707"
+    },
+    {
+      "type": "color",
+      "id": "card_background_color",
+      "label": "Card background",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "color",
+      "id": "card_media_background_color",
+      "label": "Image background",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "checkbox",
+      "id": "uppercase",
+      "label": "Uppercase text",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "title_size",
+      "label": "Maximum heading size",
+      "min": 48,
+      "max": 140,
+      "step": 4,
+      "unit": "px",
+      "default": 96
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Top padding",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 56
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Bottom padding",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 56
+    }
+  ],
+  "presets": [
+    {
+      "name": "Bouzian collection grid"
+    }
+  ]
+}
+{% endschema %}

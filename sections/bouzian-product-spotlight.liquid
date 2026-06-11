@@ -1,0 +1,310 @@
+{{ 'bouzian-editorial.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign selected_product = section.settings.product
+  assign spotlight_image = section.settings.image
+  if spotlight_image == blank and selected_product.featured_media != blank
+    assign spotlight_image = selected_product.featured_media
+  endif
+-%}
+
+{%- style -%}
+  #BouzianSpotlight-{{ section.id }} {
+    --bouzian-background: {{ section.settings.background_color }};
+    --bouzian-text-color: {{ section.settings.text_color }};
+    --bouzian-border-color: {{ section.settings.border_color }};
+    --bouzian-card-background: {{ section.settings.card_background_color }};
+    --bouzian-media-background: {{ section.settings.media_background_color }};
+    --bouzian-accent: {{ section.settings.accent_color }};
+    --bouzian-button-background: {{ section.settings.button_background }};
+    --bouzian-button-text: {{ section.settings.button_text }};
+    --bouzian-button-border: {{ section.settings.button_background }};
+    --bouzian-title-size: {{ section.settings.title_size }}px;
+    --bouzian-image-fit: {{ section.settings.image_fit }};
+    --bouzian-padding-top: {{ section.settings.padding_top }}px;
+    --bouzian-padding-bottom: {{ section.settings.padding_bottom }}px;
+    {% unless section.settings.uppercase %}
+      --bouzian-text-transform: none;
+    {% endunless %}
+  }
+{%- endstyle -%}
+
+<section id="BouzianSpotlight-{{ section.id }}" class="bouzian-spotlight bouzian-spotlight--media-{{ section.settings.media_position }}">
+  <div class="bouzian-spotlight__grid">
+    <div class="bouzian-spotlight__media">
+      {%- if spotlight_image != blank -%}
+        {{
+          spotlight_image
+          | image_url: width: 1600
+          | image_tag:
+            widths: '550, 750, 1100, 1400, 1600',
+            sizes: '(min-width: 990px) 50vw, 100vw',
+            loading: 'lazy',
+            alt: spotlight_image.alt
+        }}
+      {%- else -%}
+        {{ 'product-apparel-3' | placeholder_svg_tag: 'bouzian-spotlight__placeholder placeholder-svg' }}
+      {%- endif -%}
+    </div>
+    <div class="bouzian-spotlight__body">
+      <div>
+        {%- if section.settings.eyebrow != blank -%}
+          <p class="bouzian-eyebrow">{{ section.settings.eyebrow | escape }}</p>
+        {%- endif -%}
+        <h2 class="bouzian-spotlight__title">
+          {%- if section.settings.heading != blank -%}
+            {{ section.settings.heading }}
+          {%- elsif selected_product != blank -%}
+            {{ selected_product.title }}
+          {%- else -%}
+            Kipfilet kippenborst
+          {%- endif -%}
+        </h2>
+        <div class="bouzian-spotlight__description rte">
+          {%- if section.settings.description != blank -%}
+            {{ section.settings.description }}
+          {%- elsif selected_product != blank and selected_product.description != blank -%}
+            {{ selected_product.description }}
+          {%- else -%}
+            <p>Deze heerlijke, malse kipfilet past bij de dagelijkse keuken en snelle bestellingen.</p>
+          {%- endif -%}
+        </div>
+
+        {%- if section.blocks.size > 0 -%}
+          <div class="bouzian-addon-list">
+            {%- for block in section.blocks -%}
+              <div class="bouzian-addon-list__item" {{ block.shopify_attributes }}>
+                <span class="bouzian-addon-list__plus">+</span>
+                <span>{{ block.settings.title | escape }}</span>
+                <span>{{ block.settings.price | escape }}</span>
+              </div>
+            {%- endfor -%}
+          </div>
+        {%- endif -%}
+      </div>
+
+      {%- if section.settings.button_label != blank -%}
+        <a class="bouzian-button" href="{{ section.settings.button_link | default: selected_product.url | default: routes.all_products_collection_url }}">
+          {{ section.settings.button_label | escape }}
+        </a>
+      {%- endif -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Bouzian product spotlight",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "product",
+      "id": "product",
+      "label": "Product"
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Override image"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow",
+      "default": "Vlees > Gevogelte"
+    },
+    {
+      "type": "inline_richtext",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Kipfilet kippenborst"
+    },
+    {
+      "type": "richtext",
+      "id": "description",
+      "label": "Description",
+      "default": "<p>Deze heerlijke, malse kipfilet past bij de dagelijkse keuken en snelle bestellingen.</p>"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Button label",
+      "default": "In winkelmand"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Button link"
+    },
+    {
+      "type": "select",
+      "id": "media_position",
+      "label": "Image position",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "select",
+      "id": "image_fit",
+      "label": "Image fit",
+      "options": [
+        {
+          "value": "cover",
+          "label": "Cover"
+        },
+        {
+          "value": "contain",
+          "label": "Contain"
+        }
+      ],
+      "default": "cover"
+    },
+    {
+      "type": "header",
+      "content": "Style"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background",
+      "default": "#F8F6F1"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text",
+      "default": "#070707"
+    },
+    {
+      "type": "color",
+      "id": "border_color",
+      "label": "Borders",
+      "default": "#070707"
+    },
+    {
+      "type": "color",
+      "id": "card_background_color",
+      "label": "Content background",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "color",
+      "id": "media_background_color",
+      "label": "Image background",
+      "default": "#202020"
+    },
+    {
+      "type": "color",
+      "id": "accent_color",
+      "label": "Accent",
+      "default": "#B71F2A"
+    },
+    {
+      "type": "color",
+      "id": "button_background",
+      "label": "Button background",
+      "default": "#070707"
+    },
+    {
+      "type": "color",
+      "id": "button_text",
+      "label": "Button text",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "checkbox",
+      "id": "uppercase",
+      "label": "Uppercase text",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "title_size",
+      "label": "Maximum heading size",
+      "min": 56,
+      "max": 140,
+      "step": 4,
+      "unit": "px",
+      "default": 112
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Top padding",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 56
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Bottom padding",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 56
+    }
+  ],
+  "blocks": [
+    {
+      "type": "addon",
+      "name": "Add-on row",
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Title",
+          "default": "Parelcouscous"
+        },
+        {
+          "type": "text",
+          "id": "price",
+          "label": "Price",
+          "default": "6,99"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Bouzian product spotlight",
+      "blocks": [
+        {
+          "type": "addon",
+          "settings": {
+            "title": "Parelcouscous",
+            "price": "6,99"
+          }
+        },
+        {
+          "type": "addon",
+          "settings": {
+            "title": "Spaghetti",
+            "price": "6,99"
+          }
+        },
+        {
+          "type": "addon",
+          "settings": {
+            "title": "Kruiden",
+            "price": "6,99"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}
